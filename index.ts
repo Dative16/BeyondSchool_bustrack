@@ -1,8 +1,11 @@
 import { registerRootComponent } from 'expo';
 
-import App from './App';
+// ORDER MATTERS: this import defines the background GPS task at load time.
+// When Android restarts the app in the background, there is no screen — only
+// this file runs — so the task must be registered before anything else.
+import './src/location/task';
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
+import App from './src/App';
+
+// Tells React Native which component is the app's root (like ReactDOM.createRoot on web).
 registerRootComponent(App);
