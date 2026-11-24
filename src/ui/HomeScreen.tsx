@@ -28,10 +28,13 @@ export function HomeScreen() {
   // Refresh the numbers every 5 s and try an upload every 15 s while the
   // screen is open. (In the background, the GPS task triggers uploads itself.)
   useEffect(() => {
-    void refresh();
+    // Defer the first read: effects should subscribe/update external systems,
+    // not set state synchronously in their body.
+    const kickoff = setTimeout(() => void refresh(), 0);
     const tick = setInterval(() => void refresh(), 5_000);
     const sync = setInterval(() => void trySync().then(setLastSync), 15_000);
     return () => {
+      clearTimeout(kickoff);
       clearInterval(tick);
       clearInterval(sync);
     };
@@ -40,7 +43,7 @@ export function HomeScreen() {
   const onStart = async () => {
     const result = await startTracking();
     if (result === 'no-background-permission') {
-      setNote('Ruhusa ya "Allow all the time" inahitajika. Fungua Settings → Location → Allow all the time.');
+      setNote('Ruhusa ya ‘Allow all the time’ inahitajika. Fungua Settings → Location → Allow all the time.');
     } else if (result === 'no-foreground-permission') {
       setNote('Ruhusa ya mahali imekataliwa.');
     } else {
@@ -121,7 +124,7 @@ export function HomeScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Kabla ya safari ya majaribio</Text>
         <Text style={styles.sub}>
-          Zima "battery optimisation" kwa programu hii, na kwenye Tecno/Infinix ruhusu "Auto-start". Tazama README.
+          Zima ‘battery optimisation’ kwa programu hii, na kwenye Tecno/Infinix ruhusu ‘Auto-start’. Tazama README.
         </Text>
         <Pressable onPress={() => void Linking.openSettings()} style={styles.secondaryBtn} accessibilityRole="button">
           <Text style={styles.secondaryText}>Fungua Settings za programu</Text>
@@ -151,7 +154,12 @@ function Row({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.ground },
-  content: { padding: 16, gap: 12 },
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 28,
+    gap: 12,
+  },
   card: { backgroundColor: colors.card, borderRadius: 24, padding: 20, gap: 10 },
   title: { fontSize: 26, fontWeight: '600', color: colors.ink },
   cardTitle: { fontSize: 18, fontWeight: '600', color: colors.ink },
